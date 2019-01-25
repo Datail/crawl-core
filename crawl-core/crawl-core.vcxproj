@@ -118,11 +118,13 @@
     <ClInclude Include="Fetcher.h" />
     <ClInclude Include="Frontier.h" />
     <ClInclude Include="Main.h" />
+    <ClInclude Include="Url.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Fetcher.cpp" />
     <ClCompile Include="Frontier.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Url.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

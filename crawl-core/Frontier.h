@@ -4,7 +4,11 @@
 #define __FRONTIER_H
 
 #include <queue>
+#include <list>
+#include <algorithm>
+
 #include "Main.h"
+#include "Url.h"
 
 using namespace std;
 
@@ -15,12 +19,15 @@ public:
 	~Frontier();
 
 	void Fill(vector<string> seeds, int);
-	void RegisterUrl(string);
-	string GetUrl();
+	void RegisterUrl(Url);
+	void ArchiveUrl(size_t);
+	Url GetUrl();
 	bool IsEmpty();
 
 private:
-	queue<string> _internal_fifo_struct;
+	queue<Url> _internal_fifo_struct;
+	list<size_t> _internal_downloaded_urls;
+	std::list<size_t>::iterator _it;
 };
 
 #endif

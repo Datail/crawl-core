@@ -17,9 +17,10 @@ void Fetcher::Run()
 {
 	do {
 		auto f = [](Fetcher* executer) {
-			executer->FrontierURLs.GetUrl(); /// Get URL from Frontier repository
+			Url url = executer->FrontierURLs.GetUrl(); /// Get URL from Frontier repository
 			/// Resolve DNS via DNS servers
 			/// Use resolved IP address to download HTML pages
+			executer->FrontierURLs.ArchiveUrl(url.UniqueId); /// Add downloaded URL to list of already seen URLs in the frontier repo
 			/// Extract links/URLs from within HTML pages
 			/// Validate URLs, assign a weight to each URL object, discard unrelevant URLs
 			/// Push extracted and validated URLs to Frontier
