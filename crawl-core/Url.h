@@ -6,17 +6,14 @@
 #include <string>
 
 
-using namespace std;
-
-
 class Url
 {
 public:
-	Url(string);
+	Url(std::string);
 	~Url();
 
 	size_t UniqueId;
-	string Value;
+	std::string Value;
 	bool AlreadyDownloaded;
 };
 

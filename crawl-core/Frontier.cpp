@@ -1,5 +1,6 @@
 #include "Frontier.h"
 
+using namespace std;
 
 Frontier::Frontier()
 {
@@ -36,7 +37,8 @@ void Frontier::ArchiveUrl(size_t url_hash)
 Url Frontier::GetUrl()
 {
 	Url url = _internal_fifo_struct.front();
-	_internal_fifo_struct.pop();
+	if(!_internal_fifo_struct.empty())
+		_internal_fifo_struct.pop();
 	return url;
 }
 

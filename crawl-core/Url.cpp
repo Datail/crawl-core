@@ -1,6 +1,6 @@
 #include "Url.h"
 
-
+using namespace std;
 
 Url::Url(string sz_value)
 {

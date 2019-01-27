@@ -77,6 +77,10 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -85,6 +89,9 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -118,15 +125,43 @@
     <ClInclude Include="Fetcher.h" />
     <ClInclude Include="Frontier.h" />
     <ClInclude Include="Main.h" />
+    <ClInclude Include="Resolver.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Url.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Fetcher.cpp" />
     <ClCompile Include="Frontier.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Resolver.cpp" />
     <ClCompile Include="Url.cpp" />
+    <ClCompile Include="Utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="crawl-core.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\poco.foundation.redist.1.4.6-p4\build\native\poco.foundation.redist.targets" Condition="Exists('..\packages\poco.foundation.redist.1.4.6-p4\build\native\poco.foundation.redist.targets')" />
+    <Import Project="..\packages\poco.foundation.1.4.6-p4\build\native\poco.foundation.targets" Condition="Exists('..\packages\poco.foundation.1.4.6-p4\build\native\poco.foundation.targets')" />
+    <Import Project="..\packages\poco.net.redist.1.4.6-p4\build\native\poco.net.redist.targets" Condition="Exists('..\packages\poco.net.redist.1.4.6-p4\build\native\poco.net.redist.targets')" />
+    <Import Project="..\packages\poco.net.1.4.6-p4\build\native\poco.net.targets" Condition="Exists('..\packages\poco.net.1.4.6-p4\build\native\poco.net.targets')" />
+    <Import Project="..\packages\tbb.redist.4.2.3.1\build\native\tbb.redist.targets" Condition="Exists('..\packages\tbb.redist.4.2.3.1\build\native\tbb.redist.targets')" />
+    <Import Project="..\packages\tbb.4.2.3.1\build\native\tbb.targets" Condition="Exists('..\packages\tbb.4.2.3.1\build\native\tbb.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\poco.foundation.redist.1.4.6-p4\build\native\poco.foundation.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\poco.foundation.redist.1.4.6-p4\build\native\poco.foundation.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\poco.foundation.1.4.6-p4\build\native\poco.foundation.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\poco.foundation.1.4.6-p4\build\native\poco.foundation.targets'))" />
+    <Error Condition="!Exists('..\packages\poco.net.redist.1.4.6-p4\build\native\poco.net.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\poco.net.redist.1.4.6-p4\build\native\poco.net.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\poco.net.1.4.6-p4\build\native\poco.net.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\poco.net.1.4.6-p4\build\native\poco.net.targets'))" />
+    <Error Condition="!Exists('..\packages\tbb.redist.4.2.3.1\build\native\tbb.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\tbb.redist.4.2.3.1\build\native\tbb.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\tbb.4.2.3.1\build\native\tbb.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\tbb.4.2.3.1\build\native\tbb.targets'))" />
+  </Target>
 </Project>
