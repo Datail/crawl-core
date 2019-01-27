@@ -39,6 +39,8 @@ using Poco::Exception;
 using Poco::Net::HTTPStreamFactory;
 using Poco::Net::FTPStreamFactory;
 
+void CrawlBatch(std::string);
+
 class Fetcher
 {
 public:

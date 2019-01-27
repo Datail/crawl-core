@@ -1,6 +1,9 @@
+#include "Poco/Exception.h"
 #include "Frontier.h"
 
+
 using namespace std;
+using Poco::Exception;
 
 Frontier::Frontier()
 {
@@ -12,6 +15,46 @@ Frontier::~Frontier()
 {
 }
 
+void Frontier::AssignUrl(Resolver *dnsResolver)
+{
+	Url url = GetUrl();
+	string host = dnsResolver->Resolve(url);
+	
+
+	queue<Url> queueUrl;
+	
+	try {
+		queueUrl = _internal_urls_per_host.at(host);
+	}
+	catch (Exception& e) {
+		cerr << e.name() << " | " << e.displayText() << " | " << e.message() << endl;
+	}
+	
+	queueUrl.push(url);
+
+	_internal_urls_per_host.insert_or_assign(host,queueUrl);
+}
+
+vector<string> Frontier::GetQueuesKeys()
+{
+	vector<string> dnsNames;
+	vector<string>::iterator vit;
+
+	vit = dnsNames.begin();
+	for (map<string, queue<Url>>::const_iterator iter = _internal_urls_per_host.begin(); iter != _internal_urls_per_host.end(); iter++)
+	{
+		string key  = iter->first;
+		dnsNames.insert(vit,key);
+	}
+	return dnsNames;
+}
+
+queue<Url> Frontier::GetUrlQueue(string ip_host_key)
+{
+	queue<Url> queueByHost = _internal_urls_per_host.at(ip_host_key);
+	_internal_urls_per_host.erase(ip_host_key);
+	return queueByHost;
+}
 
 void Frontier::Fill(vector<string> urls, int max_urls)
 {

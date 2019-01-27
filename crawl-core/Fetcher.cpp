@@ -1,14 +1,16 @@
 #include "Fetcher.h"
 
-
 using namespace std;
-
-
 
 Fetcher::Fetcher(vector<string> seeds, int nseed)
 {
 	FrontierURLs.Fill(seeds, nseed);
+	FrontierURLs.AssignUrl(&DNSResolver);
 }
+
+Frontier *frontier;
+Fetcher *executer;
+Resolver *resolver;
 
 
 Fetcher::~Fetcher()
@@ -79,27 +81,59 @@ void Fetcher::DownloadURL(string host_ip, Url url)
 	//}
 }
 
-void crawl_batch_fn(Fetcher *executer)
+void CrawlBatch(string host)
 {
-	Url url = executer->FrontierURLs.GetUrl();					/// Get URL from Frontier repository
-	string host_ip = executer->DNSResolver.Resolve(url);		/// Resolve DNS via DNS servers
-	executer->DownloadURL(host_ip, url);							/// Use resolved IP address to download HTML pages
-	executer->FrontierURLs.ArchiveUrl(url.UniqueId);			/// Add downloaded URL to list of already seen URLs (UST/DUE) in the frontier repo
-	/// Extract links/URLs from within HTML pages
-	/// Validate URLs, assign a weight to each URL object, discard unrelevant URLs
-	/// Push extracted and validated URLs to Frontier
+	queue<Url> urls = frontier->GetUrlQueue(host);
+	string urlValue;
+	size_t urlId;
+	while (!urls.empty()) {
+		try {
+			Url url = urls.front();
+			urls.pop();
+			urlValue = url.Value;
+			urlId = url.UniqueId;
+			executer->DownloadURL(host, url);							/// Use resolved IP address to download HTML pages
+			frontier->ArchiveUrl(url.UniqueId);			/// Add downloaded URL to list of already seen URLs (UST/DUE) in the frontier repo
+			/// Extract links/URLs from within HTML pages
+			/// Validate URLs, assign a weight to each URL object, discard unrelevant URLs
+			/// Push extracted and validated URLs to Frontier
+		}
+		catch (Exception& e) 
+		{
+			cerr << "Error while trying to crawl " << urlId << ":" << urlValue << endl;
+			cerr << e.displayText() << endl;
+			cerr << e.message() << endl;
+		}
+	}
 }
 
 void Fetcher::Run()
 {
 	std::vector<std::thread> threadList;
 
-	do {
-		///threadList.push_back(thread((f, this)));
-		threadList.push_back(std::thread(crawl_batch_fn, this));
-	} while (!FrontierURLs.IsEmpty());
+	executer = this;
+	resolver = &DNSResolver;
+	frontier = &FrontierURLs;
+
+	//// TASK 1 - KEEP POP'ING URLs AND ASSIGNING THEM TO LISTS BY HOST (DNS)
+	thread readFrontier([] {
+		do {
+			frontier->AssignUrl(resolver);
+		} while (!frontier->IsEmpty());
+	});
+
+	threadList.push_back(readFrontier);
+	
+	//// TASK 2 -  KEEP creating threads per each list per host
+	thread crawlQueues([] {
+		vector<string> hosts = frontier->GetQueuesKeys();
+		for_each(hosts.begin(), hosts.end(), CrawlBatch); // TBD: turn this into a parallel foreach
+	});
+	
+	threadList.push_back(crawlQueues);
+
 	/// Wait for main thread to finish
 	///main_thread.join();
-	std::for_each(threadList.begin(), threadList.end(), std::mem_fn(&std::thread::join));
+	for_each(threadList.begin(), threadList.end(), mem_fn(&thread::join));
 	
 }
