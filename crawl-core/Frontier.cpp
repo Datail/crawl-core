@@ -1,6 +1,7 @@
 #include "Poco/Exception.h"
 #include "Frontier.h"
 
+#include <mutex>
 
 using namespace std;
 using Poco::Exception;
@@ -67,8 +68,13 @@ void Frontier::Fill(vector<string> urls, int max_urls)
 void Frontier::RegisterUrl(Url s) 
 {
 	_it = find(_internal_downloaded_urls.begin(), _internal_downloaded_urls.end(), s.UniqueId);
-	if(_it == _internal_downloaded_urls.end())   // Only add URL to frontier repo if it hasn't been crawled yet
-		_internal_fifo_struct.push(s);	
+	if (_it == _internal_downloaded_urls.end()) 
+	{   // Only add URL to frontier repo if it hasn't been crawled yet
+		unique_lock<mutex> mlock(mutex_);
+		_internal_fifo_struct.push(s);
+		mlock.unlock();	// unlock before notificiation to minimize mutex contention
+		cond_.notify_one();  // notify one waiting thread
+	}
 }
 
 
@@ -79,9 +85,18 @@ void Frontier::ArchiveUrl(size_t url_hash)
 
 Url Frontier::GetUrl()
 {
-	Url url = _internal_fifo_struct.front();
-	if(!_internal_fifo_struct.empty())
+	Url url("");
+
+	unique_lock<mutex> mlock(mutex_); // mutex scope lock
+	while (_internal_fifo_struct.empty()) // check condition to be safe against spurious wakes
+	{
+		cond_.wait(mlock); // release lock and go join the waiting thread queue
+	}
+
+	if (!_internal_fifo_struct.empty()) {
+		url = _internal_fifo_struct.front();
 		_internal_fifo_struct.pop();
+	}
 	return url;
 }
 

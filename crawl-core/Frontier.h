@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <vector>
 #include <map>
+#include <mutex>
 
 #include "Main.h"
 #include "Url.h"
@@ -34,6 +35,9 @@ private:
 	std::queue<Url> _internal_fifo_struct;
 	std::list<size_t> _internal_downloaded_urls;
 	std::list<size_t>::iterator _it;
+	std::mutex mutex_;
+	std::condition_variable cond_;
+
 
 };
 

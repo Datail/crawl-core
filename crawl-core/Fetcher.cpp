@@ -107,30 +107,34 @@ void CrawlBatch(string host)
 	}
 }
 
+
+void readFrontier()
+{
+	do {
+		frontier->AssignUrl(resolver);
+	} while (!frontier->IsEmpty());
+}
+
+void crawlQueues() 
+{
+	vector<string> hosts = frontier->GetQueuesKeys();
+	for_each(hosts.begin(), hosts.end(), CrawlBatch); // TBD: turn this into a parallel foreach
+}
+
 void Fetcher::Run()
 {
 	std::vector<std::thread> threadList;
+	///thread threadList[2];
 
 	executer = this;
 	resolver = &DNSResolver;
 	frontier = &FrontierURLs;
 
-	//// TASK 1 - KEEP POP'ING URLs AND ASSIGNING THEM TO LISTS BY HOST (DNS)
-	thread readFrontier([] {
-		do {
-			frontier->AssignUrl(resolver);
-		} while (!frontier->IsEmpty());
-	});
+	//// TASK #1 - Keep extracting URLs and assigning them to queues per host (DNS)
+	threadList.push_back(thread(readFrontier));
 
-	threadList.push_back(readFrontier);
-	
-	//// TASK 2 -  KEEP creating threads per each list per host
-	thread crawlQueues([] {
-		vector<string> hosts = frontier->GetQueuesKeys();
-		for_each(hosts.begin(), hosts.end(), CrawlBatch); // TBD: turn this into a parallel foreach
-	});
-	
-	threadList.push_back(crawlQueues);
+	//// TASK #2 -  KEEP creating threads for each queue per host	
+	threadList.push_back(thread(crawlQueues));
 
 	/// Wait for main thread to finish
 	///main_thread.join();
