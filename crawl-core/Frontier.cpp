@@ -24,6 +24,12 @@ void Frontier::AssignUrl(Resolver *dnsResolver)
 
 	queue<Url> queueUrl;
 	
+	unique_lock<mutex> mlock(mutex_multi_); // mutex scope lock
+	while (_internal_urls_per_host.empty()) // check condition to be safe against spurious wakes
+	{
+		cond_multi_.wait(mlock); // release lock and go join the waiting thread queue
+	}
+
 	try {
 		queueUrl = _internal_urls_per_host.at(host);
 	}
@@ -32,8 +38,9 @@ void Frontier::AssignUrl(Resolver *dnsResolver)
 	}
 	
 	queueUrl.push(url);
-
 	_internal_urls_per_host.insert_or_assign(host,queueUrl);
+	mlock.unlock();	// unlock before notificiation to minimize mutex contention
+	cond_multi_.notify_one();  // notify one waiting thread
 }
 
 vector<string> Frontier::GetQueuesKeys()
@@ -52,6 +59,11 @@ vector<string> Frontier::GetQueuesKeys()
 
 queue<Url> Frontier::GetUrlQueue(string ip_host_key)
 {
+	unique_lock<mutex> mlock(mutex_multi_); // mutex scope lock
+	while (_internal_urls_per_host.empty()) // check condition to be safe against spurious wakes
+	{
+		cond_multi_.wait(mlock); // release lock and go join the waiting thread queue
+	}
 	queue<Url> queueByHost = _internal_urls_per_host.at(ip_host_key);
 	_internal_urls_per_host.erase(ip_host_key);
 	return queueByHost;

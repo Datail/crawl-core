@@ -35,8 +35,8 @@ private:
 	std::queue<Url> _internal_fifo_struct;
 	std::list<size_t> _internal_downloaded_urls;
 	std::list<size_t>::iterator _it;
-	std::mutex mutex_;
-	std::condition_variable cond_;
+	std::mutex mutex_, mutex_multi_;
+	std::condition_variable cond_, cond_multi_;
 
 
 };
